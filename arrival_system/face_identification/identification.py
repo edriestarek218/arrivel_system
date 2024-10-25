@@ -21,20 +21,15 @@ models = [
 # Define the recognition model you want to use
 model_name = models[1]  # Facenet in this case
 
+# To keep track of recognized names
+recognized_names = set()
 
-def save_data(name,arrival_time,csv_attend='attend.csv'):
-    with open(csv_attend ,mode ='a',newline='') as file:
-        writer=csv.writer(file)
-        csv.writerow([name,arrival_time])
+def save_data(name, arrival_time, csv_attend='attend.csv'):
+    with open(csv_attend, mode='a', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow([name, arrival_time])
 
-
-
-
-
-
-
-
-def recognize_faces(frame, db_path="face_identification\DataBase",csv_file='attend.csv'):
+def recognize_faces(frame, db_path="face_identification/DataBase", csv_file='attend.csv'):
     """
     Function to detect and recognize faces in a frame.
     
@@ -61,12 +56,12 @@ def recognize_faces(frame, db_path="face_identification\DataBase",csv_file='atte
             try:
                 # Pass the face region (array) directly to DeepFace
                 dfs = DeepFace.find(
-                    img_path=face_region,  # Pass the face region as a NumPy array
+                    img_path=face_region,
                     db_path=db_path,
                     model_name=model_name,
                     enforce_detection=False  # Skip detection as face is already detected
                 )
-                current_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                 if len(dfs) > 0 and len(dfs[0]) > 0:
                     # Extract the identity of the closest match (file name)
@@ -78,70 +73,36 @@ def recognize_faces(frame, db_path="face_identification\DataBase",csv_file='atte
                     print(f"Identified person: {identity_name}")
                     
                     
-                    save_data(identity_name,current_time,csv_file)
                     
                     
                     
                     
+                    
+                    
+
+                    #check for duplicate name 
+                    if identity_name not in recognized_names:
+                        recognized_names.add(identity_name)  
+                        save_data(identity_name, current_time, csv_file)  
+
                     # Draw the name of the person inside the bounding box
                     cv2.putText(frame, identity_name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
                 else:
                     cv2.putText(frame, "Unknown", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
                     
                     
-                    save_data("Unknown",current_time,csv_file)
                     
                     
+                    
+                    
+
+                    # Save "Unknown" only if it hasn't been recorded yet
+                    if "Unknown" not in recognized_names:
+                        recognized_names.add("Unknown")
+                        save_data("Unknown", current_time, csv_file)
                     
             except Exception as e:
                 print(f"Error: {e}")
 
     # Return the frame with labeled faces
     return frame
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

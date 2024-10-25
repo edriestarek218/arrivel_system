@@ -1,0 +1,1 @@
+from .emabding import FaceEmbeddingManager
